@@ -250,13 +250,12 @@ def main():
     for key in data_files.keys():
         logger.info(f"load a local file for {key}: {data_files[key]}")
 
-
+    # CHANGE: deleted use_auth arg 
     # Loading a dataset from local json files
     raw_datasets = load_dataset(
         "json",
         data_files=data_files,
         cache_dir=model_args.cache_dir,
-        use_auth_token=True if model_args.use_auth_token else None,
     )
 
 
