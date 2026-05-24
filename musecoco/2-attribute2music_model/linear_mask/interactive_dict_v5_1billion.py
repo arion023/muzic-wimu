@@ -255,155 +255,172 @@ def attributes(args):
     logger.info("Type the input sentence and press return:")
     start_id = 0
 
-    # for inputs in buffered_read(args.input, args.buffer_size):
-    save_root = args.save_root
-    os.makedirs(save_root, exist_ok=True)
-    midi_decoder = MidiDecoder("REMIGEN2")
 
-    # test_command = np.load("../Text2Music_data/v2.1_20230218/full_0218_filter_by_5866/infer_command_balanced.npy",
-    #                        allow_pickle=True).item()
-    # test_command = np.load(args.ctrl_command_path, allow_pickle=True).item()
+    command_paths = args.ctrl_command_path.split(" ")
+    save_root_paths = args.save_root.split(" ")
+    print(command_paths)
+    
+    
+    for ctrl_cmd_path, save_root in zip(command_paths[1:], save_root_paths[1:]):
 
-    # test_command = json.load(open(args.ctrl_command_path, "r"))
-    if args.use_gold_labels:
-        with open(args.save_root + "/Using_gold_labels!.txt", "w") as check_input:
-            pass
-    else:
-        with open(args.save_root + "/Using_pred_labels!.txt", "w") as check_input:
-            pass
-    test_command = pickle.load(open(args.ctrl_command_path, "rb"))
-    if args.start is None:
-        args.start = 0
-        args.end = len(test_command)
-    else:
-        args.start = min(max(args.start, 0), len(test_command))
-        args.end = min(max(args.end, 0), len(test_command))
+        print(" CURRENT CTRL CMD:")
+        print("\t", ctrl_cmd_path)
 
-    gen_command_list = []
-    for j in range(args.need_num):
-        for i in range(args.start, args.end):
-            if args.use_gold_labels:
-                pred_labels = test_command[i]["gold_labels"]
-            else:
-                pred_labels = test_command[i]["pred_labels"]
-            attribute_tokens = convert_vector_to_token(pred_labels)
-            # for key in key_order:
-            #     if key not in pred_labels.keys():
-            #         continue
-            #     if key in key_has_NA and pred_labels[key][-1] == 1:
-            #         continue
-            #     for j in range(len(pred_labels[key])):
-            #         if pred_labels[key][j] == 1:
-            #             attribute_tokens.append(f"{key}_{j}")
-            test_command[i]["infer_command_tokens"] = attribute_tokens
-            gen_command_list.append([test_command[i]["infer_command_tokens"], f"{i}", j, test_command[i]])
+        print(" CURRENT SAVE ROOT:")
+        print("\t", save_root)
+        
 
-    steps = len(gen_command_list) // args.batch_size
-    print(f"Starts to generate {args.start} to {args.end} of {len(gen_command_list)} samples in {steps + 1} batch steps!")
+        # for inputs in buffered_read(args.input, args.buffer_size):
+        os.makedirs(save_root, exist_ok=True)
+        midi_decoder = MidiDecoder("REMIGEN2")
+
+        # test_command = np.load("../Text2Music_data/v2.1_20230218/full_0218_filter_by_5866/infer_command_balanced.npy",
+        #                        allow_pickle=True).item()
+        # test_command = np.load(args.ctrl_command_path, allow_pickle=True).item()
+
+        # test_command = json.load(open(args.ctrl_command_path, "r"))
+        if args.use_gold_labels:
+            with open(save_root + "/Using_gold_labels!.txt", "w") as check_input:
+                pass
+        else:
+            with open(save_root + "/Using_pred_labels!.txt", "w") as check_input:
+                pass
+    
+
+        test_command = pickle.load(open(ctrl_cmd_path, "rb"))
+        if args.start is None:
+            args.start = 0
+            args.end = len(test_command)
+        else:
+            args.start = min(max(args.start, 0), len(test_command))
+            args.end = min(max(args.end, 0), len(test_command))
+
+        gen_command_list = []
+        for j in range(args.need_num):
+            for i in range(args.start, args.end):
+                if args.use_gold_labels:
+                    pred_labels = test_command[i]["gold_labels"]
+                else:
+                    pred_labels = test_command[i]["pred_labels"]
+                attribute_tokens = convert_vector_to_token(pred_labels)
+                # for key in key_order:
+                #     if key not in pred_labels.keys():
+                #         continue
+                #     if key in key_has_NA and pred_labels[key][-1] == 1:
+                #         continue
+                #     for j in range(len(pred_labels[key])):
+                #         if pred_labels[key][j] == 1:
+                #             attribute_tokens.append(f"{key}_{j}")
+                test_command[i]["infer_command_tokens"] = attribute_tokens
+                gen_command_list.append([test_command[i]["infer_command_tokens"], f"{i}", j, test_command[i]])
+
+        steps = len(gen_command_list) // args.batch_size
+        print(f"Starts to generate {args.start} to {args.end} of {len(gen_command_list)} samples in {steps + 1} batch steps!")
 
 
-    for batch_step in range(steps + 1):
-        infer_list = gen_command_list[batch_step*args.batch_size:(batch_step+1)*args.batch_size]
-        infer_command_token = [g[0] for g in infer_list]
-        # assert infer_command.shape[1] == 133, f"error feature dim for {gen_key}!"
-        if len(infer_list) == 0:
-            continue
-        # with open(save_root + f"/{command_index}/text_description.txt", "w") as text_output:
-        #     text_output.write(text_description[command_index])
+        for batch_step in range(steps + 1):
+            infer_list = gen_command_list[batch_step*args.batch_size:(batch_step+1)*args.batch_size]
+            infer_command_token = [g[0] for g in infer_list]
+            # assert infer_command.shape[1] == 133, f"error feature dim for {gen_key}!"
+            if len(infer_list) == 0:
+                continue
+            # with open(save_root + f"/{command_index}/text_description.txt", "w") as text_output:
+            #     text_output.write(text_description[command_index])
 
-        if os.path.exists(save_root + f"/{infer_list[-1][1]}/remi/{infer_list[-1][2]}.txt"):
-            print(f"Skip the {batch_step}-th batch since has been generated!")
-            continue
+            if os.path.exists(save_root + f"/{infer_list[-1][1]}/remi/{infer_list[-1][2]}.txt"):
+                print(f"Skip the {batch_step}-th batch since has been generated!")
+                continue
 
-        # start_tokens = [f""]
-        start_tokens = []
-        sep_pos = []
-        for attribute_prefix in infer_command_token:
-            start_tokens.append(" ".join(attribute_prefix) + " <sep>")
-            sep_pos.append(len(attribute_prefix)) # notice that <sep> pos is len(attribute_prefix) in this sequence
-        sep_pos = np.array(sep_pos)
-        for inputs in [start_tokens]:  # "" for none prefix input
-            results = []
-            for batch in make_batches(inputs, args, task, max_positions, encode_fn):
-                bsz = batch.src_tokens.size(0)
-                src_tokens = batch.src_tokens
-                src_lengths = batch.src_lengths
-                constraints = batch.constraints
+            # start_tokens = [f""]
+            start_tokens = []
+            sep_pos = []
+            for attribute_prefix in infer_command_token:
+                start_tokens.append(" ".join(attribute_prefix) + " <sep>")
+                sep_pos.append(len(attribute_prefix)) # notice that <sep> pos is len(attribute_prefix) in this sequence
+            sep_pos = np.array(sep_pos)
+            for inputs in [start_tokens]:  # "" for none prefix input
+                results = []
+                for batch in make_batches(inputs, args, task, max_positions, encode_fn):
+                    bsz = batch.src_tokens.size(0)
+                    src_tokens = batch.src_tokens
+                    src_lengths = batch.src_lengths
+                    constraints = batch.constraints
 
-                if use_cuda:
-                    src_tokens = src_tokens.cuda()
-                    src_lengths = src_lengths.cuda()
-                    if constraints is not None:
-                        constraints = constraints.cuda()
+                    if use_cuda:
+                        src_tokens = src_tokens.cuda()
+                        src_lengths = src_lengths.cuda()
+                        if constraints is not None:
+                            constraints = constraints.cuda()
 
-                sample = {
-                    "net_input": {
-                        "src_tokens": src_tokens,
-                        "src_lengths": src_lengths,
-                        "sep_pos": sep_pos,
-                    },
-                }
-                translate_start_time = time.time()
-                translations = task.inference_step(
-                    generator, models, sample, constraints=constraints
-                )
-                translate_time = time.time() - translate_start_time
-                total_translate_time += translate_time
-                list_constraints = [[] for _ in range(bsz)]
-                if args.constraints:
-                    list_constraints = [unpack_constraints(c) for c in constraints]
+                    sample = {
+                        "net_input": {
+                            "src_tokens": src_tokens,
+                            "src_lengths": src_lengths,
+                            "sep_pos": sep_pos,
+                        },
+                    }
+                    translate_start_time = time.time()
+                    translations = task.inference_step(
+                        generator, models, sample, constraints=constraints
+                    )
+                    translate_time = time.time() - translate_start_time
+                    total_translate_time += translate_time
+                    list_constraints = [[] for _ in range(bsz)]
+                    if args.constraints:
+                        list_constraints = [unpack_constraints(c) for c in constraints]
 
-                for i, (id, hypos) in enumerate(zip(batch.ids.tolist(), translations)):
-                    src_tokens_i = utils.strip_pad(src_tokens[i], tgt_dict.pad())
-                    constraints = list_constraints[i]
-                    results.append(
-                        (
-                            start_id + id,
-                            src_tokens_i,
-                            hypos,
-                            {
-                                "constraints": constraints,
-                                "time": translate_time / len(translations),
-                                "translation_shape":len(translations),
-                            },
+                    for i, (id, hypos) in enumerate(zip(batch.ids.tolist(), translations)):
+                        src_tokens_i = utils.strip_pad(src_tokens[i], tgt_dict.pad())
+                        constraints = list_constraints[i]
+                        results.append(
+                            (
+                                start_id + id,
+                                src_tokens_i,
+                                hypos,
+                                {
+                                    "constraints": constraints,
+                                    "time": translate_time / len(translations),
+                                    "translation_shape":len(translations),
+                                },
+                            )
                         )
-                    )
 
-            # sort output to match input order
-            for id_, src_tokens, hypos, info in sorted(results, key=lambda x: x[0]):
-                if src_dict is not None:
-                    src_str = src_dict.string(src_tokens, args.remove_bpe)
-                # Process top predictions
-                for hypo in hypos[: min(len(hypos), args.nbest)]:
-                    hypo_tokens, hypo_str, alignment = utils.post_process_prediction(
-                        hypo_tokens=hypo["tokens"].int().cpu(),
-                        src_str=src_str,
-                        alignment=hypo["alignment"],
-                        align_dict=align_dict,
-                        tgt_dict=tgt_dict,
-                        remove_bpe=args.remove_bpe,
-                        extra_symbols_to_ignore=get_symbols_to_strip_from_output(generator),
-                    )
+                # sort output to match input order
+                for id_, src_tokens, hypos, info in sorted(results, key=lambda x: x[0]):
+                    if src_dict is not None:
+                        src_str = src_dict.string(src_tokens, args.remove_bpe)
+                    # Process top predictions
+                    for hypo in hypos[: min(len(hypos), args.nbest)]:
+                        hypo_tokens, hypo_str, alignment = utils.post_process_prediction(
+                            hypo_tokens=hypo["tokens"].int().cpu(),
+                            src_str=src_str,
+                            alignment=hypo["alignment"],
+                            align_dict=align_dict,
+                            tgt_dict=tgt_dict,
+                            remove_bpe=args.remove_bpe,
+                            extra_symbols_to_ignore=get_symbols_to_strip_from_output(generator),
+                        )
 
-                    os.makedirs(save_root + f"/{infer_list[id_][1]}", exist_ok=True)
-                    if not os.path.exists(save_root + f"/{infer_list[id_][1]}/infer_command.json"):
-                        with open(save_root + f"/{infer_list[id_][1]}/infer_command.json", "w") as f:
-                            json.dump(infer_list[id_][-1], f)
-                    save_id = infer_list[id_][2]
+                        os.makedirs(save_root + f"/{infer_list[id_][1]}", exist_ok=True)
+                        if not os.path.exists(save_root + f"/{infer_list[id_][1]}/infer_command.json"):
+                            with open(save_root + f"/{infer_list[id_][1]}/infer_command.json", "w") as f:
+                                json.dump(infer_list[id_][-1], f)
+                        save_id = infer_list[id_][2]
 
-                    os.makedirs(save_root + f"/{infer_list[id_][1]}/remi", exist_ok=True)
-                    with open(save_root + f"/{infer_list[id_][1]}/remi/{save_id}.txt", "w") as f:
-                        f.write(hypo_str)
-                    remi_token = hypo_str.split(" ")[sep_pos[id_] + 1:]
-                    print(f"batch:{batch_step} save_id:{save_id} over with length {len(hypo_str.split(' '))}; "
-                          f"Average translation time:{info['time']} seconds; Remi seq length: {len(remi_token)}; Batch size:{args.batch_size}; \
-                          Translation shape:{info['translation_shape']}.")
-                    os.makedirs(save_root + f"/{infer_list[id_][1]}/midi", exist_ok=True)
-                    try:
-                        midi_obj = midi_decoder.decode_from_token_str_list(remi_token)
-                        midi_obj.dump(save_root + f"/{infer_list[id_][1]}/midi/{save_id}.mid")
-                    except:
-                        pass
+                        os.makedirs(save_root + f"/{infer_list[id_][1]}/remi", exist_ok=True)
+                        with open(save_root + f"/{infer_list[id_][1]}/remi/{save_id}.txt", "w") as f:
+                            f.write(hypo_str)
+                        remi_token = hypo_str.split(" ")[sep_pos[id_] + 1:]
+                        print(f"batch:{batch_step} save_id:{save_id} over with length {len(hypo_str.split(' '))}; "
+                            f"Average translation time:{info['time']} seconds; Remi seq length: {len(remi_token)}; Batch size:{args.batch_size}; \
+                            Translation shape:{info['translation_shape']}.")
+                        os.makedirs(save_root + f"/{infer_list[id_][1]}/midi", exist_ok=True)
+                        try:
+                            midi_obj = midi_decoder.decode_from_token_str_list(remi_token)
+                            midi_obj.dump(save_root + f"/{infer_list[id_][1]}/midi/{save_id}.mid")
+                        except Exception as e:
+                            print(e)
+                            print("Exception occured during generating midi file.")
 
 
 def cli_main():

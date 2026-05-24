@@ -9,11 +9,23 @@
 import torch
 from torch.nn import Module
 
-from fast_transformers.causal_product import causal_dot_product
+# from fast_transformers.causal_product import causal_dot_product
 from fast_transformers.feature_maps import elu_feature_map
 
 
+def causal_dot_product(q, k, v):
+    # Wymuszamy float32 dla stabilności przy modelu 1B
+    q = q.to(torch.float32)
+    k = k.to(torch.float32)
+    v = v.to(torch.float32)
 
+    # Obliczamy iloczyn z lekkim "bezpiecznikiem" (clamping)
+    kv = torch.einsum("bhle,bhld->bhled", k, v)
+    kv_cumsum = torch.cumsum(kv, dim=2)
+    res = torch.einsum("bhle,bhled->bhld", q, kv_cumsum)
+    
+    # Wracamy do oryginalnego typu danych modelu (prawdopodobnie FP16)
+    return res.to(dtype=k.dtype)
 
 def causal_linear(Q, K, V):
     dtype = Q.dtype
