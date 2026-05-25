@@ -30,11 +30,11 @@ model_name="linear_mask-${model_size}"
 
 
 # models parameters
-DATA_DIR="muzic/musecoco/2-attribute2music_model/data/$datasets_name"
+DATA_DIR="external/muzic/musecoco/2-attribute2music_model/data/$datasets_name"
 
-checkpoint_path="muzic/musecoco/2-attribute2music_model/checkpoints/${model_name}/${checkpoint_name}.pt"
+checkpoint_path="external/muzic/musecoco/2-attribute2music_model/checkpoints/${model_name}/${checkpoint_name}.pt"
 
-export PYTHONPATH="muzic/musecoco/2-attribute2music_model:$PYTHONPATH"
+export PYTHONPATH="external/muzic/musecoco/2-attribute2music_model:$PYTHONPATH"
 
 declare -a moods=("angry" "exciting" "fear" "funny" "happy" "lazy" "magnificent" "quiet" "romantic" "sad" "warm")
 # declare -a moods=("lazy")
@@ -49,7 +49,7 @@ do
 
     for m in "${moods[@]}"
     do
-        ctrl_command_path="${ctrl_command_path} muzic/musecoco/2-attribute2music_model/data/controlability/${genre}/infer-${m}.bin"
+        ctrl_command_path="${ctrl_command_path} external/muzic/musecoco/2-attribute2music_model/data/controlability/${genre}/infer-${m}.bin"
         save_root="${save_root} musecoco-generated/${genre}/${m}/topk${k}-t${temp}-ngram${ngram}"
     done
 
@@ -69,7 +69,7 @@ do
     mkdir -p ${save_root}
     mkdir -p ${log_root}
 
-    python -u muzic/musecoco/2-attribute2music_model/linear_mask/interactive_dict_v5_1billion.py \
+    python -u external/muzic/musecoco/2-attribute2music_model/linear_mask/interactive_dict_v5_1billion.py \
     ${DATA_DIR}/data-bin \
     --task language_modeling_control \
     --path $checkpoint_path \
