@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Starting predict.sh script"
+
 set -e # stops script if error
 
 declare -a genres=("classical" "country" "jazz" "pop" "rock" "traditional")

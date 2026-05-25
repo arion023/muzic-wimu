@@ -10,6 +10,8 @@ need_num=4
 temp=0.7
 ngram=16
 
+echo "Starting interactive_1billion script."
+
 export PYTORCH_CUDA_ALLOC_CONF="max_split_size_mb:128"
 
 
