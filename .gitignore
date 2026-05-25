@@ -1,2 +1,8 @@
 .ipynb_checkpoints/
 .DS_Store
+__pycache__/
+*.bin
+*.pyc
+musecoco/1-text2attribute_model/generation
+musecoco/2-attribute2music_model/generation
+musecoco/2-attribute2music_model/checkpoints
