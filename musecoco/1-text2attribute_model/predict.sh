@@ -11,22 +11,22 @@ do
     for m in "${moods[@]}"
     do 
     echo "test file"
-    echo "../../../data/prompts/${g}/${m}_${g}_prompts.json"
+    echo "./data/prompts/${g}/${m}_${g}_prompts.json"
     python main.py \
     --do_predict \
     --model_name_or_path=XinXuNLPer/MuseCoco_text2attribute \
-    --test_file="../../../data/prompts/${g}/${m}_${g}_prompts.json" \
+    --test_file="./data/prompts/${g}/${m}_${g}_prompts.json" \
     --attributes=data/att_key.json \
     --num_labels=num_labels.json \
-    --output_dir="./generation/${g}/${m}" \
+    --output_dir="./muzic/musecoco/1-text2attribute_model/generation/${g}/${m}" \
     --overwrite_output_dir
 
     python stage2_pre.py \
-    --test_file="../../../data/prompts/${g}/${m}_${g}_prompts.json" \
-    --predictions="./generation/${g}/${m}/predict_attributes.json" \
-    --probabilites="./generation/${g}/${m}/softmax_probs.json" \
+    --test_file="./data/prompts/${g}/${m}_${g}_prompts.json" \
+    --predictions="./muzic/musecoco/1-text2attribute_model/generation/${g}/${m}/predict_attributes.json" \
+    --probabilites="./muzic/musecoco/1-text2attribute_model/generation/${g}/${m}/softmax_probs.json" \
     --attributes=data/att_key.json \
-    --output_file="../2-attribute2music_model/data/controlability/${g}/infer-${m}.bin"
+    --output_file="./muzic/musecoco/2-attribute2music_model/data/controlability/${g}/infer-${m}.bin"
 
     done
 done

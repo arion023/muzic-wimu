@@ -30,12 +30,12 @@ model_name="linear_mask-${model_size}"
 # models parameters
 DATA_DIR="../data/$datasets_name"
 
-checkpoint_path="../checkpoints/${model_name}/${checkpoint_name}.pt"
+checkpoint_path="./muzic/musecoco/2-attribute2music_model/checkpoints/${model_name}/${checkpoint_name}.pt"
 
-# declare -a moods=("angry" "exciting" "fear" "funny" "happy" "lazy" "magnificent" "quiet" "romantic" "sad" "warm")
-declare -a moods=("lazy")
-# declare -a genres=("pop" "rock" "traditional")
-declare -a genres=("traditional")
+declare -a moods=("angry" "exciting" "fear" "funny" "happy" "lazy" "magnificent" "quiet" "romantic" "sad" "warm")
+# declare -a moods=("lazy")
+declare -a genres=("pop" "country" "rock" "traditional" "jazz" "classical")
+# declare -a genres=("traditional")
 
 for g in "${genres[@]}"
 do
@@ -45,8 +45,8 @@ do
 
     for m in "${moods[@]}"
     do
-        ctrl_command_path="${ctrl_command_path} ../data/controlability/${genre}/infer-${m}.bin"
-        save_root="${save_root} ../generation/${date}/${model_name}-${checkpoint_name}/${command_name}/${genre}/${m}/topk${k}-t${temp}-ngram${ngram}"
+        ctrl_command_path="${ctrl_command_path} ./muzic/musecoco/2-attribute2music_model/data/controlability/${genre}/infer-${m}.bin"
+        save_root="${save_root} ./musecoco-generated/${genre}/${m}/topk${k}-t${temp}-ngram${ngram}"
     done
 
     echo $ctrl_command_path
