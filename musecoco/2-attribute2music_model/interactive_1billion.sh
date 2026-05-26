@@ -24,7 +24,7 @@ BATCH_SIZE=2
 
 device=0
 date="0505"
-mkdir -p "log/${date}/${command_name}"
+mkdir -p "results/generated/musecoco/log/${date}/${command_name}"
 model_name="linear_mask-${model_size}"
 
 
@@ -50,12 +50,12 @@ do
     for m in "${moods[@]}"
     do
         ctrl_command_path="${ctrl_command_path} external/muzic/musecoco/2-attribute2music_model/data/controlability/${genre}/infer-${m}.bin"
-        save_root="${save_root} musecoco-generated/${genre}/${m}/topk${k}-t${temp}-ngram${ngram}"
+        save_root="${save_root} results/generated/musecoco/${genre}/${m}/topk${k}-t${temp}-ngram${ngram}"
     done
 
     echo $ctrl_command_path
 
-    log_root="../log/${date}/${model_name}"
+    log_root="results/generated/musecoco/log/${date}/${model_name}"
 
 
 
