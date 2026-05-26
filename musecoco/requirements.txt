@@ -1,5 +1,4 @@
 
-torch==1.11.0+cu113
 # Text-to-Attribute Understanding
 transformers==4.26.0
 accelerate
@@ -14,7 +13,6 @@ wandb
 fairseq==0.10.2
 miditoolkit==0.1.16
 matplotlib
-pytorch-fast-transformers
 scipy
 evaluate
 numpy==1.23.4
